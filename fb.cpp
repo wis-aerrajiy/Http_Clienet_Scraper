@@ -7,13 +7,13 @@
 #include <openssl/err.h>
 
 int main() {
-    const char* hostname = "www.youtube.com";
+    const char* hostname = "www.en.savefrom.net";
     const char* port = "443"; // HTTPS port
     const char* path = "/watch?v=Nq4Mh_jTubA";   // Path to request
 
     // Initialize OpenSSL
     SSL_library_init();
-    SSL_CTX* ctx = SSL_CTX_new(SSLv23_client_method());
+    SSL_CTX * ctx = SSL_CTX_new(SSLv23_client_method());
 
     if (!ctx) {
         std::cerr << "OpenSSL initialization failed." << std::endl;

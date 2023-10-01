@@ -1,12 +1,22 @@
-#pragma once
+#ifndef _HTTP_HTTP
+#define _HTTP_HTTP 1
 
-#include <iostream>
-#include <cstring>
-#include <sys/socket.h>
-#include <netdb.h>
-#include <exception>
-#include <regex>
-#include <unistd.h>
+#pragma GCC system_header
+
+# include <iostream>
+# include <cstring>
+# include <sys/socket.h>
+# include <netdb.h>
+# include <unistd.h>
+# include <openssl/ssl.h>
+# include <openssl/err.h>
+# include <regex>
+# include <vector>
+# include <map>
+# include <utility>
+# include <sys/select.h>
+# include <unistd.h>
+# include <fcntl.h>
 
 namespace HTTP {
     class HttpRequest;
@@ -15,29 +25,50 @@ namespace HTTP {
     typedef struct s_HostInfo {
         std::string Host;
         std::string Protocol;
-        size_t      
+        std::string Port;
     }   t_HostInfo;
 
-    class RequestSender {
+    class   HttpResponse {
         private :
-            std::string ResponseFilesStore;
-            HttpRequest *HttpConnection;
+            bool        headerParsed;
+            std::string header;
+            std::map <std::string, std::string> headersMap;
+            std::string BodyResponsePath;
+            std::string subBodySave;
+            void        HeaderParser(std::string);
+            int         headerPart(std::string);
+        public :
+            HttpResponse();
+            ~HttpResponse();
+            bool        ParsResponse(std::string);
+    };
+
+    class   RequestSender {
+        private :
+            HttpResponse    *Response;
+            HttpRequest     *HttpConnection;
+            SSL             *sslConnection;
+            fd_set          read_set;
         public :
             RequestSender(HTTP::HttpRequest *connection);
+            ~RequestSender();
             void    NonBodyMethod();
             void    ResponseManager();
+            void    SendHttpHttpsRequest(std::string request);
+            std::pair <int, std::string> reciveHttpHttpsResponse();
             // void    BodyMethod();
     };
 
-    class HttpRequest {
+    class   HttpRequest {
         private :
-            std::string     RequestUrl;
-            t_HostInfo      *RequestUrlInfo;
-            struct addrinfo dataToresolve;
-            struct addrinfo *resolvedData;
-            HTTP::RequestSender   *RequestProcess;
-            int             socketFd;
-    
+            std::string             RequestUrl;
+            t_HostInfo              *RequestUrlInfo;
+            struct addrinfo         dataToresolve;
+            struct addrinfo         *resolvedData;
+            HTTP::RequestSender     *RequestProcess;
+            SSL_CTX                 *ctx;
+            int                     socketFd;
+
         public :
             HttpRequest();
             HttpRequest(std::string url);
@@ -54,7 +85,10 @@ namespace HTTP {
             // getter
             int getSocketFd() const;
             t_HostInfo *getRequestUrlInfo() const;
+            SSL_CTX *getOpenSslObj() const;
 
             ~HttpRequest();
     };
 }
+
+#endif

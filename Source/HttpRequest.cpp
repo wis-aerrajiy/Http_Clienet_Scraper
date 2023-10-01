@@ -12,7 +12,8 @@ HTTP::HttpRequest::HttpRequest(std::string url)
     this->RequestUrl = url;
     this->RequestUrlInfo = new HTTP::t_HostInfo;
     this->resolvedData = new addrinfo;
-
+    SSL_library_init();
+    this->ctx = SSL_CTX_new(SSLv23_client_method());
     try
     {
         this->RequestUrlChecker();
@@ -20,11 +21,12 @@ HTTP::HttpRequest::HttpRequest(std::string url)
         this->CreateSocket(AF_INET, SOCK_STREAM);
         this->SocketConnection();
         this->RequestProcess = new HTTP::RequestSender(this);
+        
     }
     catch (const std::exception &e)
     {
-        std::cerr << e.what() << '\n';
-        return;
+        std::cout << "error" << std::endl;
+        throw Exeption::HttpExption("Error Detected In HttpRequest : " + std::string(e.what()));
     }
 }
 
@@ -58,6 +60,10 @@ void HTTP::HttpRequest::RequestUrlChecker()
         i = this->RequestUrl.find("://");
         this->RequestUrlInfo->Protocol = (this->RequestUrl.substr(0, i));
         this->RequestUrlInfo->Host = (this->RequestUrl.substr(i + 3, (this->RequestUrl.length() - (i + 3))));
+        if (this->RequestUrlInfo->Protocol == "http")
+            this->RequestUrlInfo->Port = "80";
+        else
+            this->RequestUrlInfo->Port = "443";
     }
     else
         throw Exeption::HttpExption("RequestUrl can't be empty()");
@@ -69,7 +75,7 @@ void HTTP::HttpRequest::ResolveData(int __ai_family, int __ai_socktype)
     this->dataToresolve.ai_family = __ai_family;
     this->dataToresolve.ai_socktype = __ai_socktype;
 
-    if (getaddrinfo(this->RequestUrlInfo->Host.c_str(), this->RequestUrlInfo->Protocol.c_str(), &this->dataToresolve, &this->resolvedData))
+    if (getaddrinfo(this->RequestUrlInfo->Host.c_str(), this->RequestUrlInfo->Port.c_str(), &this->dataToresolve, &this->resolvedData))
         throw Exeption::HttpExption("The Host Can be resolved");
 }
 
@@ -80,7 +86,8 @@ void HTTP::HttpRequest::SocketConnection()
     std::cout << "Connection to " << this->RequestUrlInfo->Protocol + "://" + this->RequestUrlInfo->Host << " Done" << std::endl;
 }
 
-void    HTTP::HttpRequest::SendHttpRequest() {
+void HTTP::HttpRequest::SendHttpRequest()
+{
     this->RequestProcess->NonBodyMethod();
     this->RequestProcess->ResponseManager();
 }
@@ -89,9 +96,9 @@ HTTP::HttpRequest::~HttpRequest()
 {
     delete this->RequestUrlInfo;
     delete this->RequestProcess;
+    close(this->socketFd);
+    SSL_CTX_free(ctx);
 }
-
-// getters
 
 int HTTP::HttpRequest::getSocketFd() const
 {
@@ -101,4 +108,9 @@ int HTTP::HttpRequest::getSocketFd() const
 HTTP::t_HostInfo *HTTP::HttpRequest::getRequestUrlInfo() const
 {
     return (this->RequestUrlInfo);
+}
+
+SSL_CTX *HTTP::HttpRequest::getOpenSslObj() const
+{
+    return (this->ctx);
 }
