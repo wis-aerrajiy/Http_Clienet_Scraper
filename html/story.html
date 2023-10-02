@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram Story Viewer</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.16/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Additional custom styles here */
+        .story-container {
+            background: #000;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .story-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .story-header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+        }
+
+        .story-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .story-username {
+            color: #fff;
+            font-weight: 600;
+        }
+
+        .story-time {
+            color: #fff;
+            margin-left: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="max-w-md mx-auto mt-4">
+        <div class="story-container relative">
+            <img src="sample_story_image.jpg" alt="Story" class="story-image">
+            <div class="story-header">
+                <img src="user_avatar.jpg" alt="User Avatar" class="story-avatar">
+                <span class="story-username">username</span>
+                <span class="story-time ml-auto">2h</span>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

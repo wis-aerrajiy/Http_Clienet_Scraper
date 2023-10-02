@@ -3,7 +3,7 @@
 int main()
 {
     try {
-        HTTP::HttpRequest *Client = new HTTP::HttpRequest("http://example.com");
+        HTTP::HttpRequest *Client = new HTTP::HttpRequest("https://www.youtube.com");
         Client->SendHttpRequest();
     }
     catch (const std::exception &e)
